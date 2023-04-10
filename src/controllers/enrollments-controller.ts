@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import httpStatus from 'http-status';
+import { isValidCEP } from '@brazilian-utils/brazilian-utils';
 import { AuthenticatedRequest } from '@/middlewares';
 import enrollmentsService from '@/services/enrollments-service';
 
@@ -28,13 +29,17 @@ export async function postCreateOrUpdateEnrollment(req: AuthenticatedRequest, re
   }
 }
 
+export type AddressCep = { cep: string };
+
 export async function getAddressFromCEP(req: AuthenticatedRequest, res: Response) {
+  const { cep } = req.query as AddressCep;
+
   try {
-    const address = await enrollmentsService.getAddressFromCEP();
+    const address = await enrollmentsService.getAddressFromCEP(cep);
     res.status(httpStatus.OK).send(address);
   } catch (error) {
     if (error.name === 'NotFoundError') {
-      return res.send(httpStatus.NO_CONTENT);
+      return res.sendStatus(httpStatus.NO_CONTENT);
     }
   }
 }
